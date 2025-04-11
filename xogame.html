@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>XO Game</title>
+  <style>
+    body {
+      background-image: url('https://cdn.shopify.com/s/files/1/1434/2870/products/xo-neon-sign-green_1800x1800.jpg?v=1605788043');
+      background-size: 100% 100vh; 
+      background-repeat: no-repeat;
+      background-position: center top;
+      background-attachment: fixed;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    table {
+      margin: auto;
+      text-align: center;
+      font-size: 30px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-collapse: collapse;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+    }
+
+    td {
+      width: 80px;
+      height: 80px;
+      border: 1px solid rgba(102, 255, 102, 0.7);
+      background: rgba(102, 255, 102, 0.2);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      font-size: 40px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    td:hover {
+      background: rgba(102, 255, 102, 0.4);
+      box-shadow: 0 0 15px rgba(102, 255, 102, 1);
+    }
+
+    td.x {
+      color: black;
+      background: rgba(0, 0, 255, 0.1);
+    }
+
+    td.o {
+      color: white;
+      background: rgba(0, 0, 255, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: black;
+      text-shadow: 
+        0 0 5px white, 
+        0 0 10px white, 
+        0 0 15px white, 
+        0 0 20px white, 
+        0 0 25px white, 
+        0 0 30px white, 
+        0 0 35px white;
+    }
+
+    p {
+      text-align: center;
+      color: black;
+      font-size: 20px;
+      text-shadow: 
+        0 0 5px white, 
+        0 0 10px white, 
+        0 0 15px white, 
+        0 0 20px white, 
+        0 0 25px white, 
+        0 0 30px white, 
+        0 0 35px white;
+    }
+
+    #loginForm {
+      text-align: center;
+      margin-bottom: 20px;
+      background-color: rgba(0, 255, 0, 0.4);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+    }
+
+    #loginForm input {
+      margin: 10px;
+      padding: 10px;
+      font-size: 18px;
+      width: 200px;
+      border-radius: 5px;
+      border: 1px solid rgba(0, 255, 0, 0.7);
+    }
+
+    #loginForm button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: rgba(0, 255, 0, 0.7);
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    #loginForm button:hover {
+      background-color: rgba(0, 255, 0, 1);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loginForm">
+    <h1>مرحبا بك في لعبة XO!</h1>
+    <p>يرجى إدخال اسمك وعمرك للبدء:</p>
+    <input type="text" id="playerName" placeholder="أدخل اسمك" required><br>
+    <input type="number" id="playerAge" placeholder="أدخل عمرك" required><br>
+    <button onclick="startGame()">ابدأ اللعبة</button>
+  </div>
+
+  <div id="gameArea" style="display:none;">
+    <table id="xo-board">
+      <tr>
+        <td onclick="makeMove(this)"></td>
+        <td onclick="makeMove(this)"></td>
+        <td onclick="makeMove(this)"></td>
+      </tr>
+      <tr>
+        <td onclick="makeMove(this)"></td>
+        <td onclick="makeMove(this)"></td>
+        <td onclick="makeMove(this)"></td>
+      </tr>
+      <tr>
+        <td onclick="makeMove(this)"></td>
+        <td onclick="makeMove(this)"></td>
+        <td onclick="makeMove(this)"></td>
+      </tr>
+    </table>
+    <p id="status" style="font-size: 20px;">الدور: X</p>
+  </div>
+
+  <script>
+    let currentPlayer = 'X';
+    let gameOver = false;
+    let playerName = '';
+    let playerAge = 0;
+
+    function showIntro() {
+  const introScreen = document.createElement('div');
+  introScreen.id = 'introScreen';
+  introScreen.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    text-align: center;
+    z-index: 1000;
+  `;
+
+  introScreen.innerHTML = `
+    <p>لقد تم صنع هذه اللعبة بواسطة محمد خالد العمري من الأردن وعمره 15 سنة</p>
+    <button id="continueBtn" style="margin-top: 20px; padding: 10px 20px; font-size: 18px; cursor: pointer;">متابعة</button>
+  `;
+
+  document.body.appendChild(introScreen);
+
+  document.getElementById('continueBtn').addEventListener('click', function () {
+    introScreen.remove();
+    document.getElementById('loginForm').style.display = 'block';
+  });
+}
+
+function showIntro() {
+  const introScreen = document.createElement('div');
+  introScreen.id = 'introScreen';
+  introScreen.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    text-align: center;
+    z-index: 1000;
+  `;
+
+  introScreen.innerHTML = `
+    <p>لقد تم صنع هذه اللعبة بواسطة محمد خالد العمري من الأردن وعمره 15 سنة</p>
+    <button id="continueBtn" style="margin-top: 20px; padding: 10px 20px; font-size: 18px; cursor: pointer;">متابعة</button>
+  `;
+
+  document.body.appendChild(introScreen);
+
+  function proceedToLogin() {
+    introScreen.remove();
+    document.getElementById('loginForm').style.display = 'block';
+  }
+
+  document.getElementById('continueBtn').addEventListener('click', proceedToLogin);
+
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && document.getElementById('introScreen')) {
+      proceedToLogin();
+    }
+  });
+}
+
+function startGame() {
+  playerName = document.getElementById('playerName').value;
+  playerAge = parseInt(document.getElementById('playerAge').value);
+
+  if (!playerName || !playerAge) {
+    alert("يرجى ملء جميع الحقول!");
+    return;
+  }
+
+  if (playerAge < 5 || playerAge > 35) {
+    alert("العمر يجب أن يكون بين 5 و 35 سنة فقط!");
+    return;
+  }
+
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('gameArea').style.display = 'block';
+  document.getElementById('status').innerText = 'الدور: X';
+}
+
+// Event listener to trigger startGame on Enter key
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm && loginForm.style.display !== 'none') {
+      startGame();
+    }
+  }
+});
+
+// Call showIntro on page load
+window.addEventListener('load', showIntro);
+
+
+// Event listener to trigger startGame on Enter key
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm.style.display !== 'none') {
+      startGame();
+    }
+  }
+});
+
+// Call showIntro on page load
+window.addEventListener('load', showIntro);
+
+// Event listener to trigger startGame on Enter key
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm.style.display !== 'none') {
+      startGame();
+    }
+  }
+});
+
+    function makeMove(cell) {
+      if (cell.innerText === '' && !gameOver) {
+        cell.innerText = currentPlayer;
+        if (currentPlayer === 'X') {
+          cell.classList.add('x');
+        } else {
+          cell.classList.add('o');
+        }
+
+        if (checkWinner(currentPlayer)) {
+          document.getElementById('status').innerText = `${playerName} الفائز هو: ${currentPlayer}`;
+          gameOver = true;
+          return;
+        }
+        if (isDraw()) {
+          document.getElementById('status').innerText = 'تعادل!';
+          gameOver = true;
+          return;
+        }
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        document.getElementById('status').innerText = 'الدور: ' + currentPlayer;
+      }
+    }
+
+    function checkWinner(player) {
+      const cells = Array.from(document.querySelectorAll('td')).map(td => td.innerText);
+      const wins = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+      return wins.some(pattern =>
+        pattern.every(index => cells[index] === player)
+      );
+    }
+
+    function isDraw() {
+      const cells = Array.from(document.querySelectorAll('td'));
+      return cells.every(cell => cell.innerText !== '');
+    }
+  </script>
+
+</body>
+</html>
